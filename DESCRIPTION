@@ -1,10 +1,31 @@
 Package: MDOP
 Type: Package
 Title: Molecular Data Organization for Publication Tools
-Version: 1.0
-Author: Written by Robert G Young and Jiaojia Yu at the University of Guelph in Ontario Canada, October 2019
+Version: 0.0.1.0
+Authors@R: 
+    c(person(given = "Robert",
+             family = "Young",
+             role = c("aut", "cre", "cph"),
+             email = "rgyoung6@gmail.com",
+             comment = c("ORCID" = "0000-0002-6731-2506")),
+      person(given = "Jiaojia",
+             family = "Yu",
+             role = c("aut"),
+             email = "jiaojia@uoguelph.ca"),
+      person(given = "Marie-José",
+             family = "Cote",
+             role = c("aut"),
+             email = "marie-jose.cote@canada.ca"),
+      person(given = "Robert",
+             family = "Hanner",
+             role = c("aut", "cph")),
+             email = "rhanner@uoguelph.ca"),
 Maintainer: Robert G Young <ryoung04@uoguelph.ca>
 Description: Here we present Molecular Data Organization for Publication (MDOP) R package v1.0 to assist users in the standardization and upload of molecular sequence data and associated metadata files to centralized data repositories. The functions included in this package were developed to facilitate the organization of files (specimen images or trace files) and the pre-processing of DNA sequence files. These R functions do not implement secondary libraries, packages, or functions beyond the base elements included in R Ver. 3.5.1. With simple commands and interactive input the use of the functions in this package requires little knowledge of R beyond opening the R terminal, loading in the package, typing in the function of choice, and reading directions.
 License: GPL
 Encoding: UTF-8
+URL: https://github.com/rgyoung6/MDOP
+Depends: 
+    R (>= 3.6.2)
+Language: en-GB
 LazyData: true
