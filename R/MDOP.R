@@ -2,6 +2,31 @@
 
 # Written by Rob Young and Jiaojia Yu at the University of Guelph in Ontario Canada, October 2019
 
+#********************************************Main program section***********************************************
+
+################################ GETTING WORKING INITAL WORKING DIRECTORY, SETTING WORKIGN DIRECTORY, AND GETTING TIME AND DATE ###########
+  
+wd_time_date <- function(target_dir)
+{
+
+  initial_wd<-getwd()
+
+  # Set the target directory as the working directory
+  setwd(target_dir)
+
+  #set the format for the date for all operating systems
+  Sys.setlocale("LC_TIME", "C")
+
+  # Current Date - for file naming use
+  date <- sub("-", "", sub("-", "", Sys.Date()))
+
+  initial_wd_and_date<-c(initial_wd,date)
+  return(initial_wd_and_date)
+    
+}
+
+
+
 ################################ SELECT TARGET DIRECTORY AND FLAGGING THE OPERATING SYSTEM FUNCTION ###########
   
 readpath <- function()
@@ -71,7 +96,7 @@ cmd_line_instruction_file <- function()
 }
 
 
-
+#' @export
 #This function creates a list of all JPG, AB1, or FASTA files in one directory (including sub-directories).
 ########################################### target_file_list FUNCTION #####################################################################
 
@@ -88,82 +113,66 @@ target_file_list <- function(target_dir="target_dir", file_type="file_type")
     file_type <- filetypeasinteger()
   }  
 
-  #######  BIG IF STATEMENT FOR THE REST OF THE CODE TO NOT COMPLETE IF THE FILE TYPE RESPONSE IS 0 MEANING TO CANCEL#####
+  #***********  BIG IF STATEMENT FOR THE REST OF THE CODE TO NOT COMPLETE IF THE FILE TYPE RESPONSE IS 0 MEANING TO CANCEL ****
 
-  if(file_type!=0){
+  if(file_type==0){
 
-    ############################################## SETTING PATH AND GETTING TIME ############################
+    print("Script aborted by user through selection of 0 = Cancel")
+  
+  }else{
 
-    # Set the location of the current working directory
-    setwd(target_dir)
+    #************************* SETTING PATH AND GETTING TIME *******************
+
+    initial_wd_and_date<-as.vector(wd_time_date(target_dir))
+
+    #************************* GETTING DIR LIST AND GETTING ALL FILE NAMES UNDER THAT PATH *******************
 
     # Get a list of directories and sub directories at the specified location
     listofdirs <- list.dirs()
 
-    #set the format for the date for all operating systems
-    Sys.setlocale("LC_TIME", "C")
-
-    # Current Date - for file naming use
-    date <- sub("-", "", sub("-", "", Sys.Date()))
-
-    ############################################################################
-    # In this step, I want to create the file with every .jpg/.ab1/.fas in the parent folder and all subfolders.
-
+    # Create the file with every .jpg/.ab1/.fas in the parent folder and all subfolders.
     #Initializing the data frame used to write to the file
-    tool1_final <- data.frame()
+    target_file_list_final <- data.frame()
 
-    if(file_type == "1") {
+    for (i in 1:length(list.dirs())){
 
-      for (i in 1:length(list.dirs())){
-
-        setwd(list.dirs()[i])
+      if(file_type == "1") {
 
         #Initiating the list of files in the folders
-        file_list <- list.files(pattern = "*[.][Jj][Pp][Gg]$")
-        path_list <- unlist(lapply(file_list,normalizePath))
-        combined <- cbind(file_list,path_list)
-        tool1_final <- rbind(tool1_final, combined)
-        setwd(target_dir)
-        write.table(tool1_final, file = paste(date, "_target_file_list_JPG", ".txt", sep = ""), quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
-      }
-      print(paste("Task complete, look for output file ", date, "_target_file_list_JPG.txt at this location ",target_dir, sep=""))
-    } else if (file_type == "2") {
+        file_list <- list.files(listofdirs[i], pattern = "*[.][Jj][Pp][Gg]$")
+        path_list <- normalizePath(list.files(listofdirs[i], pattern = "*[.][Jj][Pp][Gg]$", full.names=TRUE))
+        file_name_for_output<-"_target_file_list_JPG.txt"
 
-      for (i in 1:length(list.dirs())){
-
-        setwd(list.dirs()[i])
+      } else if (file_type == "2") {
 
         #Initiating the list of files in the folders
-        file_list <- list.files(pattern = "*[.][Aa][Bb]1$")
-        path_list <- unlist(lapply(file_list,normalizePath))
-        combined <- cbind(file_list,path_list)
-        tool1_final <- rbind(tool1_final, combined)
-        setwd(target_dir)
-        write.table(tool1_final, file = paste(date, "_target_file_list_AB1", ".txt", sep = ""), quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
-      }
-      print(paste("Task complete, look for output file ", date, "_target_file_list_AB1.txt at this location ",target_dir, sep=""))
-    } else if (file_type == "3") {
+        file_list <- list.files(listofdirs[i], pattern = "*[.][Aa][Bb]1$")
+        path_list <- normalizePath(list.files(listofdirs[i], pattern = "*[.][Aa][Bb]1$", full.names=TRUE))
+        file_name_for_output<-"_target_file_list_AB1.txt"
 
-      for (i in 1:length(list.dirs())){
-
-        setwd(list.dirs()[i])
+      } else if (file_type == "3") {
 
         #Initiating the list of files in the folders
-        file_list <- list.files(pattern = "*[.]([Ff][Aa][Ss]$)|([Ff][Aa][Ss][Tt][Aa]$)")
-        path_list <- unlist(lapply(file_list,normalizePath))
-        combined <- cbind(file_list,path_list)
-        tool1_final <- rbind(tool1_final, combined)
-        setwd(target_dir)
-        write.table(tool1_final, file = paste(date, "_target_file_list_FAS", ".txt", sep = ""), quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
-      }
-      print(paste("Task complete, look for output file ", date, "_target_file_list_FAS.txt at this location ",target_dir, sep=""))
-    } else {
-      print("Script aborted by user through selection of 0 = Cancel")
-    }
-  }
+        file_list <- list.files(listofdirs[i], pattern = "*[.]([Ff][Aa][Ss]$)|([Ff][Aa][Ss][Tt][Aa]$)")
+        path_list <- normalizePath(list.files(listofdirs[i], pattern = "*[.]([Ff][Aa][Ss]$)|([Ff][Aa][Ss][Tt][Aa]$)", full.names=TRUE))
+        file_name_for_output<-"_target_file_list_FAS.txt"
+
+      } # end of the file type if
+
+      combined <- cbind(file_list,path_list)
+      target_file_list_final <- rbind(target_file_list_final, combined)
+
+    } # end of the for loop
+    setwd(target_dir)
+    write.table(target_file_list_final, file = paste(initial_wd_and_date[2], file_name_for_output, sep = ""), quote = FALSE, col.names = FALSE, row.names = FALSE, sep = "\t")
+    print(paste("Task complete, look for output file ", initial_wd_and_date[2], file_name_for_output, " at this location ",target_dir, sep=""))
+
+  }# end of big if statement
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
 }
 
-
+#' @export
 # This function copies all files with specific extension (JPG, AB1, or FAS) into a new directory. [RECURSIVELY]
 ##################################### recursive_copy FUNCTION ##############################################################
 recursive_copy <- function(target_dir="target_dir", file_type="file_type")
@@ -180,90 +189,81 @@ recursive_copy <- function(target_dir="target_dir", file_type="file_type")
   }  
 
 
-  #######  BIG IF STATEMENT FOR THE REST OF THE CODE TO NOT COMPLETE IF THE FILE TYPE RESPONSE IS 0 MEANING TO CANCEL#####
+  #********* BIG IF STATEMENT FOR THE REST OF THE CODE TO NOT COMPLETE IF THE FILE TYPE RESPONSE IS 0 MEANING TO CANCEL **********
 
-  if(file_type!=0){
+  if(file_type==0){
 
-    ############################################## SETTING PATH AND GETTING TIME ############################
+    print("Script aborted by user through selection of 0 = Cancel")
 
-    # Set the location of the current working directory
-    setwd(target_dir)
+  }else{
+
+    #************************************** SETTING PATH AND GETTING TIME ********************************
+
+    initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 
     # Get a list of directories and sub directories at the specified location
-    listofdirs <- list.dirs()
+    listofdirs <- normalizePath(list.dirs())
 
-    #set the format for the date for all operating systems
-    Sys.setlocale("LC_TIME", "C")
-
-    # Current Date - for file naming use
-    date <- sub("-", "", sub("-", "", Sys.Date()))
-
-    ########################################## CREATE FILE FOLDER ########################################
+    #****************************************** CREATE FILE FOLDER **************************************
 
     if(file_type == "1") {
 
+      # Path for JPG directory
+      jpg_path <- paste(target_dir,"/", initial_wd_and_date[2], "_recursive_copy_JPG","/", sep = "")
       # Create a new directory for storing all the JPG files
-      dir.create(paste( "./",date, "_recursive_copy_JPG", "/", sep = ""))
-
-      # Absolute Path for JPG directory
-      jpg_path_abs <- paste(target_dir,"/", date, "_recursive_copy_JPG","/", sep = "")
+      dir.create(jpg_path)
 
       # Loop for copy files to the JPG folder (All the JPG files will be saved in that folder)
       for (i in 1:length(listofdirs)) {
 
-        setwd(target_dir)
-        setwd(listofdirs[i])
+        path_from <- list.files(listofdirs[i], pattern = "*[.][Jj][Pp][Gg]$", full.names=TRUE)
 
-        path_from <- list.files(pattern = "*[.][Jj][Pp][Gg]$")
+        file.copy(path_from, jpg_path)
 
-        file.copy(path_from, jpg_path_abs)
       }
-      print(paste("Task complete, look for output file folder ", date, "_recursive_copy_JPG at this location ",target_dir, sep=""))
+      print(paste("Task complete, look for output file folder ", jpg_path, " at this location ",target_dir, sep=""))
+
     } else if (file_type == "2") {
 
+      # Path for AB1 directory
+      ab1_path <- paste(target_dir,"/", initial_wd_and_date[2], "_recursive_copy_AB1","/", sep = "")
       # Create a new directory for storing all the AB1 files
-      dir.create(paste( "./",date, "_recursive_copy_AB1", "/", sep = ""))
-
-      # Absolute Path for AB1 directory
-      ab1_path_abs <- paste(target_dir,"/", date, "_recursive_copy_AB1","/", sep = "")
+      dir.create(ab1_path)
 
       # Loop for copy files to the AB1 folder (All the AB1 files will be saved in that folder)
       for (i in 1:length(listofdirs)) {
 
-        setwd(target_dir)
-        setwd(listofdirs[i])
+        path_from <- list.files(listofdirs[i], pattern = "*[.][Aa][Bb]1$", full.names=TRUE)
 
-        path_from <- list.files(pattern = "*[.][Aa][Bb]1$")
+        file.copy(path_from, ab1_path)
 
-        file.copy(path_from, ab1_path_abs)
       }
-      print(paste("Task complete, look for output file folder ", date, "_recursive_copy_AB1 at this location ",target_dir, sep=""))
+      print(paste("Task complete, look for output file folder ", ab1_path, " at this location ",target_dir, sep=""))
     }  else if (file_type == "3") {
 
+      # Path for FAS directory
+      fas_path <- paste(target_dir,"/", initial_wd_and_date[2], "_recursive_copy_FAS","/", sep = "")
       # Create a new directory for storing all the FAS files
-      dir.create(paste( "./",date, "_recursive_copy_FAS", "/", sep = ""))
-
-      # Absolute Path for FAS directory
-      fas_path_abs <- paste(target_dir,"/", date, "_recursive_copy_FAS","/", sep = "")
+      dir.create(fas_path)
 
       # Loop for copy files to the FAS folder (All the FAS files will be saved in that folder)
       for (i in 1:length(listofdirs)) {
 
-        setwd(target_dir)
-        setwd(listofdirs[i])
+        path_from <- list.files(listofdirs[i], pattern = "*[.]([Ff][Aa][Ss]$)|([Ff][Aa][Ss][Tt][Aa]$)", full.names=TRUE)
 
-        path_from <- list.files(pattern = "*[.]([Ff][Aa][Ss]$)|([Ff][Aa][Ss][Tt][Aa]$)")
+        file.copy(path_from, fas_path)
 
-        file.copy(path_from, fas_path_abs)
       }
-      print(paste("Task complete, look for output file folder ", date, "_recursive_copy_FAS at this location ",target_dir, sep=""))
+      print(paste("Task complete, look for output file folder ", fas_path, " at this location ",target_dir, sep=""))
     }
-  }else{
-    print("Script aborted by user through selection of 0 = Cancel")
   }
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
-
+#' @export
 # This function packages multiple target files into folders of a maximum size value
 ##################################### max_packs FUNCTION ##############################################################
 max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder_size="max_folder_size")
@@ -284,14 +284,7 @@ max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder
     max_folder_size <- readmaxfoldersize()
   }  
 
-  # Set the target directory as the working directory
-  setwd(target_dir)
-
-  #set the format for the date for all operating systems
-  Sys.setlocale("LC_TIME", "C")
-
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 
   # Obtain the total size of the target directory
   target_directory_size <- sum(file.info(list.files(".", all.files = TRUE, recursive = TRUE))$size)
@@ -332,7 +325,7 @@ max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder
     file_folder_counter = 1
 
     # Create a directory for this fraction fo the files
-    dir.create(paste( "./",date,"_max_packs_",file_type,"_", file_folder_counter, sep = ""))
+    dir.create(paste( "./",initial_wd_and_date[2],"_max_packs_",file_type,"_", file_folder_counter, sep = ""))
 
     # Initializing the total size of the folder being filled
     total_file_size = 0
@@ -349,7 +342,7 @@ max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder
         # In the if indicating there is room remaining for this file in the current folder
         # create the copying elements the from file and to file strings
         from_file <- paste( "./", file_list[i], sep = "")
-        to_file <- paste("./",date,"_max_packs_",file_type,"_", file_folder_counter,"/", total_file_info[i,1], sep = "")
+        to_file <- paste("./",initial_wd_and_date[2],"_max_packs_",file_type,"_", file_folder_counter,"/", total_file_info[i,1], sep = "")
 
         # Command to copy the file
         file.copy(from_file,to_file)
@@ -368,11 +361,11 @@ max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder
         total_file_size = check_file_size
 
         # Create a directory for this fraction fo the files
-        dir.create(paste( "./",date,"_max_packs_",file_type,"_", file_folder_counter, sep = ""))
+        dir.create(paste( "./",initial_wd_and_date[2],"_max_packs_",file_type,"_", file_folder_counter, sep = ""))
 
         # create the copying elements the from file and to file strings
         from_file <- paste( "./", file_list[i], sep = "")
-        to_file <- paste("./",date,"_max_packs_",file_type,"_", file_folder_counter,"/", file_list[i], sep = "")
+        to_file <- paste("./",initial_wd_and_date[2],"_max_packs_",file_type,"_", file_folder_counter,"/", file_list[i], sep = "")
 
         # Command to copy the file
         file.copy(from_file,to_file)
@@ -380,8 +373,13 @@ max_packs <- function(target_dir="target_dir", file_type="file_type", max_folder
     }
     print(paste("Task complete. Find file folders with a max size of",max_folder_size, "MB at", target_dir), sep="")
   }
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
+#' @export
 # This function copies a group of selected files based on a supplied list by the user
 ##################################### copy_by_list FUNCTION ##############################################################
 copy_by_list <- function(target_dir="target_dir", file_list="file_list" )
@@ -398,28 +396,21 @@ copy_by_list <- function(target_dir="target_dir", file_list="file_list" )
     # This is giving terminal instructions to select the file wanting to be used
     cmd_line_instruction_file()
 
-    # Choose the fasta file you would like to work on: 
+    # Choose the list file you would like to work on: 
     file_list<-file.choose()
 
   }
 
-  #This is setting the directory to the working directory
-  setwd(target_dir)
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 
   # load in the data file into the data for the lines  
   file_list<-read.delim(file_list,header=F,sep="\t",dec=".")
 
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-    
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
-
   #Make a file folder to contain all results from the program
-  dir.create(paste( "./", date, "_copy_by_list", "/", sep = ""))
+  dir.create(paste( "./", initial_wd_and_date[2], "_copy_by_list", "/", sep = ""))
       
   #Final location for the paste of the copied files for both Windows and MAC OS
-  final_loc <- paste(target_dir, "/", date, "_copy_by_list", "/", sep = "")
+  final_loc <- paste(target_dir, "/", initial_wd_and_date[2], "_copy_by_list", "/", sep = "")
 
   #Starting the loop to go through each of the items in the selected file to copy one at a time
   for (i in 1:nrow(file_list)) {
@@ -429,9 +420,13 @@ copy_by_list <- function(target_dir="target_dir", file_list="file_list" )
     file.copy(path_from, final_loc)
   }
   print(paste("Task complete. Find the files in the folder ", date, "_copy_by_list at ", target_dir), sep="")
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
-
+#' @export
 # This function removes gaps from all sequences in the selected file. 
 ##################################### degap FUNCTION ##############################################################
 degap <- function(target_dir="target_dir", Seq_file="Seq_file")
@@ -441,9 +436,6 @@ degap <- function(target_dir="target_dir", Seq_file="Seq_file")
   if(target_dir=="target_dir"){
     target_dir = readpath()
   }
-
-  # Set the location of the current working directory
-  setwd(target_dir)
 
   # Obtain a target folder location 
   if(Seq_file=="Seq_file"){
@@ -456,14 +448,11 @@ degap <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   }
 
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
+
   # load in the data file in
   Seq_file<-data.frame(read.table(Seq_file))
 
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-    
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
 
   #******************************************************************************************
   #This section is taking the fasta file and formatting it in to columns to create the input file for the rates iteration program
@@ -500,21 +489,25 @@ degap <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   #**********************OUTPUT THE FILE ************************************************************
   # Providing the name and the location where the output files will be located
-  Write_to_file_out_str <- paste(target_dir,"/", date, "_degap.fas", sep="")
+  Write_to_file_out_str <- paste(target_dir,"/", initial_wd_and_date[2], "_degap.fas", sep="")
 
   # write the file
   write.table(final_matrix_for_file,file=Write_to_file_out_str,append=FALSE, na="", row.names=FALSE, col.names=FALSE, quote = FALSE,sep="\n")
 
   # Print the completion message
   print(paste("Task complete, look for output file ", date, "_degap.fas at this location ",target_dir, sep=""))
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
-
+#' @export
 # This function ranks sequences by length in a fasta formatted file. 
 ##################################### rank_seq FUNCTION ##############################################################
 rank_seq <- function(target_dir="target_dir", Seq_file="Seq_file")
 {
-			
+
   # Using a shared function across multiple tools, obtain a target folder location  
   if(target_dir=="target_dir"){
     target_dir = readpath()
@@ -531,43 +524,38 @@ rank_seq <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   }
 
-  #This is setting the directory to the working directory
-  setwd(target_dir)
-
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-    
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 							
   # load in the data file in
   Seq_file<-data.frame(read.table(Seq_file))				
 
-  #***********************************************************************************************************************************************************************
+  #********************************************************************************************************************************
   #This section is taking the fasta file and formatting it in to columns to create the input file for the rates iteration program
 
   #taking the read in file and changing from Fasta to tab delimited
   Header0 <- Seq_file[seq(from = 1, to = nrow(Seq_file), by = 2), 1]
   Sequence <- Seq_file[seq(from = 2, to = nrow(Seq_file), by = 2), 1]
 
-  #***********************************************************************************************************************************************************************
+  #********************************************************************************************************************************
 
   #Taking the sequences and removing the gap characters
   Sequence1 <- as.character(gsub("-", "", Sequence))
 
   #Getting the length of the sequences so we can sort by that length
-  Seq_len <- as.character(nchar(Sequence1))
+  Seq_len <- as.integer(nchar(Sequence1))
 
   #Adding the lengths to the dataframe
   New_Seq_file <- data.frame(Header0,Sequence,Seq_len)
 
-  #***********************************************************************************************************************************************************************
+  #*********************************************************************************************************************************
 
   #Now with the three column data frame we will sort by the length file and place the results in a temp data frame 
-  New_Seq_file_temp<-New_Seq_file[order(New_Seq_file$Seq_len),]
+  New_Seq_file<-New_Seq_file[order(New_Seq_file$Seq_len),]
+
+  a<-New_Seq_file
 
   #Taking the sorted dataframe and pulling out the header and sequences and rewriting the original data frame for output
-  New_Seq_file<-data.frame(New_Seq_file_temp$Header0,New_Seq_file_temp$Sequence)
+  New_Seq_file<-data.frame(New_Seq_file[,-3])
 
   #**************************************CHANGE TO FASTA FORMAT**************************************
 
@@ -591,11 +579,16 @@ rank_seq <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   #**********************OUTPUT THE FILE ************************************************************
   # Providing the name and the location where the output files will be located
-  Write_to_file_out_str <- paste(target_dir,"/", date, "_rank_seq.fas", sep="")
+  Write_to_file_out_str <- paste(target_dir,"/", initial_wd_and_date[2], "_rank_seq.fas", sep="")
   write.table(final_matrix_for_file,file=Write_to_file_out_str,append=FALSE, na="", row.names=FALSE, col.names=FALSE, quote = FALSE,sep="\n")
-  print(paste("Task complete, look for output file ", date, "_rank_seq.fas at this location ",target_dir, sep=""))
+  print(paste("Task complete, look for output file ", initial_wd_and_date[2], "_rank_seq.fas at this location ",target_dir, sep=""))
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
+#' @export
 # This function dereplicates sequences based on headers. 
 ##################################### head_derep FUNCTION ##############################################################
 head_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
@@ -608,9 +601,6 @@ head_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   }
 
-  # Set the location of the current working directory
-  setwd(target_dir)
-
   # Obtain a target file location 
   if(Seq_file=="Seq_file"){
 
@@ -622,16 +612,12 @@ head_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   }
 
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
+
   # load in the data file in
-  Seq_file<-data.frame(read.table(Seq_file))
+  Seq_file<-data.frame(read.table(Seq_file))				
 
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-    
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))				
-
-  #***********************************************************************************************************************************************************************
+  #******************************************************************************************************************************
   #This section is taking the fasta file and formatting it in to columns to create the input file for the rates iteration program
 
   #taking the read in file and changing from Fasta to tab delimited
@@ -646,15 +632,20 @@ head_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   #**********************OUTPUT THE FILE **************************************************************************************
   # Providing the name and the location where the output files will be located
-  Write_to_file_out_str <- paste(target_dir,"/", date, "_head_derep.fas", sep="")
+  Write_to_file_out_str <- paste(target_dir,"/", initial_wd_and_date[2], "_head_derep.fas", sep="")
 
   # write the file
   write.table(New_Seq_file,file=Write_to_file_out_str,append=FALSE, na="", row.names=FALSE, col.names=FALSE, quote = FALSE,sep="\n")
 
   # Print the completion message
-  print(paste("Task complete, look for output file ", date, "_head_derep.fas at this location ",target_dir, sep=""))
+  print(paste("Task complete, look for output file ", initial_wd_and_date[2], "_head_derep.fas at this location ",target_dir, sep=""))
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
+#' @export
 # This function dereplicates a fasta file based on sequences
 ##################################### seq_derep FUNCTION ##############################################################
 seq_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
@@ -676,20 +667,12 @@ seq_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   }
 
-  # Set the location of the current working directory
-  setwd(target_dir)	
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-    
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
-				
   # load in the data file in
   Seq_file<-data.frame(read.table(Seq_file))					
-			
 
-  #***********************************************************************************************************************************************************************
+  #***********************************************************************************************************************
   #This section is taking the fasta file and formatting it in to columns
 
   #taking the read in file and changing from Fasta to tab delimited
@@ -698,19 +681,22 @@ seq_derep <- function(target_dir="target_dir", Seq_file="Seq_file")
 
   New_Seq_file <- data.frame(Header0,Sequence)
 
-  #***********************************************************************************************************************************************************************
+  #***********************************************************************************************************************
   #dereplicate based on sequences
   New_Seq_file<-as.data.frame(subset(New_Seq_file, !duplicated(Sequence)))
 
-  #**********************OUTPUT THE FILE **************************************************************************************
+  #**********************OUTPUT THE FILE *********************************************************************************
   # Providing the name and the location where the output files will be located
-  Write_to_file_out_str <- paste(target_dir,"/", date, "_seq_derep.fas", sep="")
+  Write_to_file_out_str <- paste(target_dir,"/", initial_wd_and_date[2], "_seq_derep.fas", sep="")
   write.table(New_Seq_file,file=Write_to_file_out_str,append=FALSE, na="", row.names=FALSE, col.names=FALSE, quote = FALSE,sep="\n")
-  print(paste("Task complete, look for output file ", date, "_seq_derep.fas at this location ",target_dir, sep=""))
+  print(paste("Task complete, look for output file ", initial_wd_and_date[2], "_seq_derep.fas at this location ",target_dir, sep=""))
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
 
-
-
+#' @export
 # This function changes a multi-line fasta file into a single line fasta format
 ##################################### multi_to_single_fasta FUNCTION ##############################################################
 multi_to_single_fasta <- function(target_dir="target_dir", Seq_file ="Seq_file")
@@ -732,14 +718,7 @@ multi_to_single_fasta <- function(target_dir="target_dir", Seq_file ="Seq_file")
 
   }
 
-  #This is setting the directory to the working directory
-  setwd(target_dir)
-
-  #set the format for the date for all operating systems  
-  Sys.setlocale("LC_TIME", "C")
-
-  # Current Date - for file naming use
-  date <- sub("-", "", sub("-", "", Sys.Date()))
+  initial_wd_and_date<-as.vector(wd_time_date(target_dir))
 
   # load in the data file in
   Seq_file<-data.frame(read.table(Seq_file))	
@@ -768,8 +747,12 @@ multi_to_single_fasta <- function(target_dir="target_dir", Seq_file ="Seq_file")
   final_matrix_for_file<-rbind(final_matrix_for_file,seq_concate)
   #**********************OUTPUT THE FILE **************************************************************************************
   #Providing the name and the location where the output files will be located
-  Write_to_file_out_str <- paste(target_dir,"/", date, "_multi_to_single.fas", sep="")
+  Write_to_file_out_str <- paste(target_dir,"/", initial_wd_and_date[2], "_multi_to_single.fas", sep="")
 
   write.table(final_matrix_for_file,file=Write_to_file_out_str,append=FALSE,na="",row.names = FALSE, col.names=FALSE, quote = FALSE,sep="\n") 				
-  print(paste("Task complete, look for output file ", date, "_multi_to_single.fas at this location ",target_dir, sep=""))
+  print(paste("Task complete, look for output file ", initial_wd_and_date[2], "_multi_to_single.fas at this location ",target_dir, sep=""))
+
+  #Here I am making the working directory equal to the inital working directory
+  setwd(initial_wd_and_date[1])
+
 }
